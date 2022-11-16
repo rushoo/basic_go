@@ -64,13 +64,13 @@ type Student struct {
 	ID   int
 	Age  float64
 }
-type stuInfoType interface {
+type TypeConstraint interface {
 	~int | ~float64 | ~string | Student
 }
 type StudentList []Student
 
 // 对应的四种返回类型[]int、[]float64、[]string、[]Student
-func addStudent[T stuInfoType](stuInfoSet []T, stuInfo T) []T {
+func addStudent[T TypeConstraint](stuInfoSet []T, stuInfo T) []T {
 	return append(stuInfoSet, stuInfo)
 }
 func (s StudentList) Len() int {
