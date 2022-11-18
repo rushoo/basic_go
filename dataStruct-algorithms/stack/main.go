@@ -60,7 +60,7 @@ const size = 10_000_000
 var opWeight map[string]int
 
 func init() {
-	opWeight := make(map[string]int)
+	opWeight = make(map[string]int)
 	opWeight["("] = 0
 	opWeight["+"] = 1
 	opWeight["-"] = 1
@@ -68,9 +68,9 @@ func init() {
 	opWeight["/"] = 2
 }
 
-// 优先级检查,将以precedence(top,new)表示栈顶元素优先级大于等于新来元素
+// 用以表示当前操作符的优先级大于栈顶元素优先级precedence(new,top)
 func precedence(s1, s2 string) bool {
-	return opWeight[s1] >= opWeight[s2]
+	return opWeight[s1] > opWeight[s2]
 }
 
 // 判断是否为规定的运算符
@@ -105,19 +105,25 @@ func infixToPostfix(infix string) (postfix string) {
 			if nodeStack.IsEmpty() {
 				nodeStack.Push(new)
 			} else {
+				//如果是"("直接入栈
+				if new == "(" {
+					nodeStack.Push(new)
+					continue
+				}
 				//遇到右括号时需要一直弹出栈顶元素直到弹出对应的左括号为止
 				if new == ")" {
 					for nodeStack.Top() != "(" {
 						postfix += nodeStack.Pop()
 					}
 					nodeStack.Pop() //弹出"("
+					continue
 				}
 				// 当前操作符的优先级大于栈顶元素优先级，进栈，
-				if !precedence(nodeStack.Top(), new) {
+				if precedence(new, nodeStack.Top()) {
 					nodeStack.Push(new)
 				} else {
 					// 否则，依次弹出栈顶优先级大于等于当前操作符的元素，然后当前操作符进栈。
-					for precedence(nodeStack.Top(), new) {
+					for !precedence(new, nodeStack.Top()) {
 						postfix += nodeStack.Pop()
 					}
 					nodeStack.Push(new)
@@ -128,96 +134,6 @@ func infixToPostfix(infix string) (postfix string) {
 	// 遍历结束后将所有的操作符入栈
 	for !nodeStack.IsEmpty() {
 		postfix += nodeStack.Pop()
-	}
-	return postfix
-}
-
-// -
-// -
-// -
-// -
-// -
-// -
-func precedence1(symbol1, symbol2 string) bool {
-	//precedence(topSymbol, newSymbol)
-	// Returns true if symbol1 has a higher precedence than symbol2
-	if (symbol1 == "+" || symbol1 == "-") && (symbol2 == "(" || symbol2 == "/") {
-		return false
-	} else if (symbol1 == "(" && symbol2 != ")") || symbol2 == "(" {
-		return false
-	} else {
-		return true
-	}
-}
-
-// 判断是否为规定的运算符
-func isPresent(symbol string, operators []string) bool {
-	for i := 0; i < len(operators); i++ {
-		if symbol == string(operators[i]) {
-			return true
-		}
-	}
-	return false
-}
-
-// 中缀变后缀表达式
-func infixToPostfix2(infix string) (postfix string) {
-	operators := []string{"+", "-", "*", "/", "(", ")"}
-	postfix = ""
-	nodeStack := nodestack.Stack[string]{}
-
-	//从左到右遍历中缀表达式
-	for index := 0; index < len(infix); index++ {
-		newSymbol := string(infix[index])
-		if newSymbol == " " || newSymbol == "\n" {
-			// 跳过空格和换行
-			continue
-		}
-		if newSymbol >= "a" && newSymbol <= "z" {
-			//遇到操作数，存到后缀表达式
-			postfix += newSymbol
-		}
-		//遇到操作符
-		if isPresent(newSymbol, operators) {
-			if !nodeStack.IsEmpty() {
-				topSymbol := nodeStack.Top()
-				//当前操作符的优先级大于栈顶元素优先级，进栈
-				if precedence(topSymbol, newSymbol) == true {
-					//若栈顶非"("，栈顶元素pop并入后缀表达式，否则直接pop
-					if topSymbol != "(" {
-						postfix += topSymbol
-					}
-					nodeStack.Pop()
-				}
-			}
-			if newSymbol != ")" {
-				nodeStack.Push(newSymbol)
-			} else { // 那么这里要处理的就是newSymbol == ")"
-				// Pop nodeStack down to first left parenthesis(括号)
-				for {
-					if nodeStack.IsEmpty() == true {
-						break
-					}
-					ch := nodeStack.Top()
-					if ch != "(" {
-						postfix += ch
-						nodeStack.Pop()
-					} else {
-						nodeStack.Pop()
-						break
-					}
-				}
-			}
-		}
-	}
-	for {
-		if nodeStack.IsEmpty() == true {
-			break
-		}
-		if nodeStack.Top() != "(" {
-			postfix += nodeStack.Top()
-			nodeStack.Pop()
-		}
 	}
 	return postfix
 }
@@ -247,6 +163,7 @@ func evaluate(postfix string) float64 {
 	return operandStack.Top()
 }
 func main() {
+	fmt.Println(opWeight)
 	postfix := infixToPostfix("a + (b - c) / (d * e)")
 	fmt.Println(postfix)
 	values = make(map[string]float64)
