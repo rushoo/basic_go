@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 //func main() {
@@ -46,17 +48,42 @@ import (
 //	fmt.Println("\nTime for 10 million Pop() operations on sliceStack: ", elapsed)
 //}
 
-func main() {
-	postfix := infixToPostfix("a + (b - c) / (d * e)")
-	postfix2 := infixToPostfix("a * (b - c) / d * ( b + c - e)")
-	operandSlice := []float64{10, 5, 2, 4, 3}
-	assignFixValues(operandSlice)
-	result := evaluate(postfix)
-	result2 := evaluate(postfix2)
-	fmt.Println("postfix", postfix, "\tfunction evaluates to: ", result)
-	fmt.Println("postfix", postfix2, "\tfunction evaluates to: ", result2)
+//func main() {
+//	postfix := infixToPostfix("a + (b - c) / (d * e)")
+//	postfix2 := infixToPostfix("a * (b - c) / d * ( b + c - e)")
+//	operandSlice := []float64{10, 5, 2, 4, 3}
+//	assignFixValues(operandSlice)
+//	result := evaluate(postfix)
+//	result2 := evaluate(postfix2)
+//	fmt.Println("postfix", postfix, "\tfunction evaluates to: ", result)
+//	fmt.Println("postfix", postfix2, "\tfunction evaluates to: ", result2)
+//
+//	num := 1000000
+//	b := convertToBinary(num)
+//	fmt.Println("binary of ", num, "\t", b)
+//}
 
-	num := 1000000
-	b := convertToBinary(num)
-	fmt.Println("binary of ", num, "\t", b)
+func main() {
+	rand.Seed(time.Now().UnixNano())
+	start := Point{1, 1}
+	end := Point{38, 38}
+	maze := NewMaze(40, 40, start, end, "maze.txt")
+	newPos, _ := maze.StepAhead()
+	time.Sleep(1 * time.Second)
+	if newPos != None {
+		fmt.Println(newPos)
+	}
+	for {
+		if newPos == None || newPos.Equals(end) {
+			break
+		}
+		newPos, _ = maze.StepAhead()
+		time.Sleep(100 * time.Millisecond)
+		if newPos != None {
+			fmt.Println(newPos)
+		}
+	}
+	if newPos.Equals(end) {
+		fmt.Println("SUCCESS! Reached ", end)
+	}
 }
