@@ -8,6 +8,7 @@ func (stack *Stack[T]) Push(item T) {
 	// item is added to the right-most position in the slice
 	stack.items = append(stack.items, item)
 }
+// 避免空栈pop的逻辑放到程序中去加
 func (stack *Stack[T]) Pop() T {
 	length := len(stack.items)
 	returnValue := stack.items[length-1]
