@@ -55,46 +55,116 @@ import (
 1111101111111111111111000000111111111111
 */
 
+type Direction int
+
 const (
-	// N 为始定义8个方向,上北下南左西右东
-	N  Direction = iota
-	NE           //东北
-	E
-	SE //东南
-	S
-	SW //西南
-	W
-	NW           //西北
-	NotAvailable //定义不可用，用以处理空值，或者换出时做替换
+	N            Direction = iota
+	NE                     = 1
+	E                      = 2
+	SE                     = 3
+	S                      = 4
+	SW                     = 5
+	W                      = 6
+	NW                     = 7
+	NotAvailable           = 8
 )
 
-var None = Point{}
+// 重写String方法，打印输出时自动转换code为相应的方向
+func (d Direction) String() string {
+	switch d {
+	case 0:
+		return "north"
+	case NE:
+		return "north-east"
+	case E:
+		return "east"
+	case SE:
+		return "south-east"
+	case S:
+		return "south"
+	case SW:
+		return "south-west"
+	case W:
+		return "west"
+	case NW:
+		return "north-west"
+	case NotAvailable:
+		return "not available"
+	default:
+		return "unknown"
+	}
+}
 
-type Direction int //自定义类型别名，封装所有的相关的数字操作通过Direction实现，避免代码逻辑混乱
+func (d Direction) PrintDirection() {
+	fmt.Println("direction: ", d)
+}
+
+// ******************************
+
+// Point abstraction
 type Point struct {
 	x, y int
 }
+
+func (p Point) Equals(other Point) bool {
+	return p.x == other.x && p.y == other.y
+}
+
+func (p Point) PrintPoint() {
+	fmt.Printf("<%d, %d>\n", p.x, p.y)
+}
+
+var None = Point{-1, -1}
+
+// *********************************
+
+// Path abstraction
 type Path struct {
 	point          Point
 	move           Direction
 	movesAvailable []Direction
 }
+
+func NewPath(point Point) Path {
+	path := Path{point, NotAvailable, []Direction{}}
+	path.move = NotAvailable
+	// Initially all directions available
+	path.movesAvailable = []Direction{0, NE, E, SE, S, SW, W, NW}
+	return path
+}
+
+func (path *Path) RandomMove() Direction {
+	// Sets value of move
+	indicesAvailable := []int{}
+	for index := 0; index < 8; index++ {
+		if path.movesAvailable[index] != NotAvailable {
+			indicesAvailable = append(indicesAvailable, index)
+		}
+	}
+	count := len(indicesAvailable)
+	if count > 0 {
+		randomIndex := rand.Intn(count)
+		path.move = path.movesAvailable[indicesAvailable[randomIndex]]
+		path.movesAvailable[indicesAvailable[randomIndex]] = NotAvailable
+		return path.move
+	} else {
+		return NotAvailable
+	}
+}
+
+// ********************************
+
 type Maze struct {
 	rows, cols int
 	start, end Point
 	mazefile   string
 	barriers   [][]bool
 	current    Path
-	moveCount  int // 计步器
+	moveCount  int
 	pathStack  slicestack.Stack[Path]
 	gameOver   bool
 }
 
-func NewPath(point Point) Path {
-	path := Path{point, NotAvailable, []Direction{}}
-	path.movesAvailable = []Direction{N, NE, E, SE, S, SW, W, NW}
-	return path
-}
 func NewMaze(rows, cols int, start, end Point, mazefile string) (maze Maze) {
 	maze.rows = rows
 	maze.cols = cols
@@ -136,6 +206,7 @@ func NewMaze(rows, cols int, start, end Point, mazefile string) (maze Maze) {
 	maze.barriers[start.x][start.y] = true
 	return maze
 }
+
 func NewPosition(oldPosition Point, move Direction) Point {
 	switch move {
 	case N:
@@ -156,6 +227,7 @@ func NewPosition(oldPosition Point, move Direction) Point {
 		return Point{oldPosition.x - 1, oldPosition.y - 1}
 	}
 }
+
 func (m *Maze) StepAhead() (Point, Point) {
 	validMove := false
 	backTrackPoint, newPos := None, None
@@ -203,58 +275,4 @@ func (m *Maze) StepAhead() (Point, Point) {
 		return None, None
 	}
 	return newPos, backTrackPoint
-}
-func (path *Path) RandomMove() Direction {
-	dirsAvailable := []int{}
-	for index := 0; index < 8; index++ {
-		if path.movesAvailable[index] != NotAvailable {
-			dirsAvailable = append(dirsAvailable, index)
-		}
-	}
-	count := len(dirsAvailable)
-	if count > 0 {
-		randomIndex := rand.Intn(count)
-
-		//随机move一次，做出move后，该方向将不可用
-		path.move = path.movesAvailable[randomIndex]
-		path.movesAvailable[dirsAvailable[randomIndex]] = NotAvailable
-		return path.move
-	} else {
-		return NotAvailable
-	}
-}
-func (p Point) Equals(other Point) bool {
-	return p.x == other.x && p.y == other.y
-}
-func (d Direction) PrintDirection() {
-	fmt.Println("direction: ", d)
-}
-func (p Point) PrintPoint() {
-	fmt.Printf("<%d, %d>\n", p.x, p.y)
-}
-
-// 重写String方法，打印输出时自动转换code为相应的方向
-func (d Direction) String() string {
-	switch d {
-	case 0:
-		return "north"
-	case NE:
-		return "north-east"
-	case E:
-		return "east"
-	case SE:
-		return "south-east"
-	case S:
-		return "south"
-	case SW:
-		return "south-west"
-	case W:
-		return "west"
-	case NW:
-		return "north-west"
-	case NotAvailable:
-		return "not available"
-	default:
-		return "unknown"
-	}
 }

@@ -84,6 +84,6 @@ func main() {
 		}
 	}
 	if newPos.Equals(end) {
-		fmt.Println("SUCCESS! Reached ", end)
+		fmt.Println("SUCCESS!  Reached ", end)
 	}
 }
