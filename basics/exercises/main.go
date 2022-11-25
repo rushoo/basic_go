@@ -2,41 +2,29 @@ package main
 
 import "fmt"
 
-// 增加代码可读性
-const (
-	FIZZ = 3
-	BUZZ = 5
-)
+/*
+5. (1) Map function A map()-function is a function that takes a function and a
+  list. The function is applied to each member in the list and a new list containing these
+  calculated values is returned. Thus:
+  map(f(),(a1, a2, . . . , an−1, an)) = (f(a1), f(a2), . . . , f(an−1), f(an))
+*/
 
-func fizzBuzz() {
-	for i := 0; i < 100; i++ {
-		switch {
-		//switch case是顺序执行的，如果第一个条件满足，后续就不会执行了
-		case i%FIZZ == 0 && i%BUZZ == 0:
-			fmt.Println("FizzBuzz")
-		case i%FIZZ == 0:
-			fmt.Println("Fizz")
-		case i%BUZZ == 0:
-			fmt.Println("Buzz")
-		default:
-			fmt.Println(i)
-		}
+type dataType interface {
+	~int | ~float64 | ~string
+}
+
+func Map[T dataType](f func(T) T, list []T) []T {
+	var result []T
+	for _, v := range list {
+		result = append(result, f(v))
 	}
+	return result
 }
 func main() {
-	fizzBuzz()
-
-	for i := 0; i < 10; i++ {
-		fmt.Printf("%d\n", i)
+	list := []int{1, 2, 3, 4, 5}
+	f := func(i int) int {
+		return i * i
 	}
-
-	// change for-loop to goto-loop
-	i := 0
-loop:
-	fmt.Printf("%d\n", i)
-	i++
-	if i < 10 {
-		goto loop
-	}
-
+	result := Map[int](f, list)
+	fmt.Println(result)
 }
