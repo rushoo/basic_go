@@ -3,10 +3,9 @@ package main
 import "fmt"
 
 /*
-5. (1) Map function A map()-function is a function that takes a function and a
-  list. The function is applied to each member in the list and a new list containing these
-  calculated values is returned. Thus:
-  map(f(),(a1, a2, . . . , an−1, an)) = (f(a1), f(a2), . . . , f(an−1), f(an))
+6.Minimum and maximum
+     1. Write a function that finds the maximum value in an int slice ([]int).
+     2. Write a function that finds the minimum value in an int slice ([]int).
 */
 
 type dataType interface {
@@ -20,11 +19,57 @@ func Map[T dataType](f func(T) T, list []T) []T {
 	}
 	return result
 }
-func main() {
-	list := []int{1, 2, 3, 4, 5}
-	f := func(i int) int {
-		return i * i
+
+func Minimum(s []int) int {
+	min := s[0]
+	for _, v := range s {
+		if min > v {
+			min = v
+		}
 	}
-	result := Map[int](f, list)
-	fmt.Println(result)
+	return min
+}
+func Maximum(s []int) int {
+	max := s[0]
+	for _, v := range s {
+		if max < v {
+			max = v
+		}
+	}
+	return max
+}
+func Bubbleort(list []int) {
+	for i := 0; i < len(list); i++ {
+		//每轮扫描，依次将相邻元素比较大小并交换位置，确保每次的最大数都冒泡到最后
+		for j := 0; j < len(list)-i-1; j++ {
+			if list[j] > list[j+1] {
+				list[j], list[j+1] = list[j+1], list[j]
+			}
+		}
+	}
+	//	slice是引用类型，不需要返回新的slice
+}
+
+/*
+8.Functions that return functions
+
+	1.Write a function that returns a function that performs a +2 on integers.
+	  Name the function plusTwo.
+	2.Generalize the function from 1, and create a plusX(x) which returns functions
+	  that add x to an integer.
+*/
+func plusX(x int) func(int) int {
+	return func(a int) int {
+		return a + x
+	}
+}
+func plusTwo() func(int) int {
+	return func(a int) int {
+		return a + 2
+	}
+}
+func main() {
+	f1 := plusTwo()
+	f2 := plusX(10)
+	fmt.Println(f1(2), f2(2)) //4 12
 }
