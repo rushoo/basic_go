@@ -128,3 +128,95 @@ func (avl *AVLTree[T]) Insert(newValue T) {
 		avl.NumNodes += 1
 	}
 }
+
+func maxTreeNode[T OrderedStringer](node *Node[T]) *Node[T] {
+	if node == nil {
+		return nil
+	}
+	if node.Right == nil {
+		return node
+	}
+	return maxTreeNode(node.Right)
+}
+func rotateDelete[T OrderedStringer](node *Node[T]) *Node[T] {
+	node.updateHeight()
+	bFactor := node.balanceFactor()
+	switch { //类似插入时的旋转，分别讨论删除后四种可能的失衡情况
+	case bFactor > 1 && node.Left.balanceFactor() >= 0:
+		return rightRotate(node)
+	case bFactor > 1 && node.Left.balanceFactor() < 0:
+		node.Left = leftRotate(node.Left)
+		return rightRotate(node)
+	case bFactor < -1 && node.Right.balanceFactor() <= 0:
+		return leftRotate(node)
+	case bFactor < -1 && node.Right.balanceFactor() > 0:
+		node.Right = rightRotate(node.Right)
+		return leftRotate(node)
+	default: //平衡，直接返回节点状态
+		return node
+	}
+}
+func deleteNode[T OrderedStringer](node *Node[T], val T) *Node[T] {
+	if val < node.Value {
+		node.Left = deleteNode(node.Left, val)
+	} else if val > node.Value {
+		node.Right = deleteNode(node.Right, val)
+	} else {
+		//val == node.Value
+		switch {
+		case node.Left != nil && node.Right != nil:
+			//若删除的节点含双子树，将节点值替换为左子树最大值，并删除该最大值节点
+			maxLeft := maxTreeNode(node.Left)
+			node.Value = maxLeft.Value
+			node.Left = deleteNode(node.Left, maxLeft.Value)
+		case node.Left != nil:
+			node = node.Left
+		case node.Right != nil:
+			node = node.Right
+		default: //node.Left == nil && node.Right == nil,叶子节点直接删除（置为空）
+			node = nil
+		}
+	}
+	// 并将叶子节点的状态返回
+	if node == nil {
+		return nil
+	}
+	return rotateDelete(node)
+}
+func deleteNode2[T OrderedStringer](node *Node[T], val T) *Node[T] {
+	// 这个判断的必要性是什么？
+	if node == nil {
+		return nil
+	}
+
+	if val > node.Value {
+		node.Right = deleteNode(node.Right, val)
+	}
+	if val < node.Value {
+		node.Left = deleteNode(node.Left, val)
+	}
+	//val == node.Value
+	switch {
+	case node.Left != nil && node.Right != nil:
+		//若删除的节点含双子树，将节点值替换为左子树最大值，并删除该最大值节点
+		maxLeft := maxTreeNode(node.Left)
+		node.Value = maxLeft.Value
+		node.Left = deleteNode(node.Left, maxLeft.Value)
+	case node.Left != nil:
+		node = node.Left
+	case node.Right != nil:
+		node = node.Right
+	default: //叶子节点直接删除
+		node = nil
+	}
+	if node == nil {
+		return nil
+	}
+	return rotateDelete(node)
+}
+func (avl *AVLTree[T]) Delete(value T) {
+	if avl.Search(value) == true {
+		avl.Root = deleteNode(avl.Root, value)
+		avl.NumNodes -= 1
+	}
+}
