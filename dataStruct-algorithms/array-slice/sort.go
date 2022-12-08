@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -220,9 +219,3 @@ fmt.Println(heap2.Items)
 		}
 	}
 */
-func main() {
-	//numbers := []float64{3.5, -2.4, 12.8, 9.1}
-	numbers := []float64{-1, -4, 3, 5, -3, 0, 1, 7}
-	QuickSort[float64](numbers)
-	fmt.Println(numbers)
-}
