@@ -1,50 +1,55 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
 )
 
-func genArray(len int) []int {
-	items := make([]int, len)
+func genArray[T dataType](len int) []T {
+	data := make([]T, len)
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len; i++ {
 		item := rand.Intn(len) - len/2
-		items[i] = item
+		data[i] = T(item)
 	}
-	return items
+	return data
 }
-func isSorted(items []int) bool {
-	end := len(items)
+func isSorted[T dataType](data []T) bool {
+	end := len(data)
 	for i := 0; i < end-1; i++ {
-		if items[i] > items[i+1] {
+		if data[i] > data[i+1] {
 			return false
 		}
 	}
 	return true
 }
 
+func TestQuickSort(t *testing.T) {
+	data := genArray[int32](10)
+	QuickSort[int32](data)
+	if res := isSorted[int32](data); res != true {
+		t.Errorf("expected %v, got %v", true, res)
+	}
+}
 func TestMergeSort(t *testing.T) {
-	items := genArray(10)
-	items = MergeSort(items)
-	fmt.Println(items)
-	if res := isSorted(items); res != true {
+	data := genArray[int64](10)
+	data = MergeSort[int64](data)
+	if res := isSorted[int64](data); res != true {
 		t.Errorf("expected %v, got %v", true, res)
 	}
 }
 func TestBubbleSort(t *testing.T) {
-	items := genArray(200)
-	BubbleSort(items)
-	if res := isSorted(items); res != true {
+	data := genArray[float32](200)
+	BubbleSort[float32](data)
+	if res := isSorted[float32](data); res != true {
 		t.Errorf("expected %v, got %v", true, res)
 	}
 }
 func TestInsertSort(t *testing.T) {
-	items := genArray(200)
-	InsertSort(items)
-	if res := isSorted(items); res != true {
+	data := genArray[float64](200)
+	InsertSort[float64](data)
+	if res := isSorted[float64](data); res != true {
 		t.Errorf("expected %v, got %v", true, res)
 	}
 }
