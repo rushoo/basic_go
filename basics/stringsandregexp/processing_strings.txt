@@ -1,0 +1,33 @@
+Comparing Strings:
+strings.Contains(s, substr) bool        true if the string s contains substr
+        ContainsAny(s, substr)  bool    true if the string s contains any of the characters contained in the string substr
+        ContainsRune(s, rune)   bool    true if the string s contains a specific rune.
+        EqualFold(s1, s2)   bool        true of strings s1 and s2 are the same when case-insensitive
+        HasPrefix(s, prefix) bool       true if the string s begins with the string prefix
+        HasSuffix(s, suffix)   bool     true if the string ends with the string suffix
+            ---- For all the functions in the strings package, which operate on characters,
+        there is a corresponding function in the bytes package that operates on a byte slice.
+
+Converting String Case:
+strings.ToLower(str) string   returns a new string in lowercase of the specified string.
+        ToUpper(str) string   returns a new string in Uppercase of the specified string.
+        ToTitle(str) string   returns a new string in title case of the specified string.
+
+Working with Character Case:
+unicode.IsLower(rune) bool      true if the specified rune is lowercase.
+        ToLower(rune) rune      returns the lowercase rune associated with the specified rune.
+        IsUpper(rune) bool      true if the specified rune is uppercase.
+        ToUpper(rune) rune      returns the uppercase rune associated with the specified rune.
+        IsTitle(rune) bool      true if the specified rune is title case.
+        ToTitle(rune) rune      returns the title case rune associated with the specified rune.
+
+Inspecting Strings:
+strings.Count(s, sub) int           returns how many times the specified substring is found in the string s.
+        Index(s, sub) int           return the index of the first or last occurrence of a specified
+        LastIndex(s, sub) int               substring string within the string s, or -1 if there is no occurrence.
+        IndexAny(s, chars) int      return the first or last occurrence of any character in the
+        LastIndexAny(s, chars) int      specified string within the string s, or -1 if there is no occurrence.
+
+Manipulating Strings：
+
+
