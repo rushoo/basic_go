@@ -122,12 +122,13 @@ func quickSort3(s []int, low, high int, wg *sync.WaitGroup) {
 	}
 }
 func QSort(s []int) {
-	var wg sync.WaitGroup
+	// 再套一层函数外壳方便传入waitGroup
+    var wg sync.WaitGroup
 	quickSort3(s, 0, len(s)-1, &wg)
 	wg.Wait()
 }
 ```
-基于样本范围0~100_000_000、样本容量为10_000_000的随机数数列，取`insertSort(50)`，比较上述这几种简单排序的性能，    
+基于样本范围0~100_000_000、样本容量为10_000_000的随机数数列，取`insertSort(50)`，比较上述这几种快速排序的性能，使用并发后提升很明显：   
 ```
 $ go test -bench='QuickSort$' -benchtime=4s -count=2 .
 goos: windows
@@ -199,12 +200,13 @@ pkg: tmp
 cpu: AMD Ryzen 7 5800H with Radeon Graphics
 Benchmark_2_QuickSort-16        1000000000               2.974 ns/op
 Benchmark_2_QuickSort-16        1000000000               2.947 ns/op
+
 Benchmark_32_QuickSort-16       1000000000               0.4153 ns/op
 Benchmark_32_QuickSort-16       1000000000               0.4040 ns/op
 PASS
 ok      tmp     278.746s
 ```
-可见在数据重复度比较高的情况下，这种改进的意义是很大的。    
+可见在数据重复度比较高的情况下，这种三分改进的意义是很大的。    
 
 ###### 以上所有结果的测试用例和详细过程在[这里](test/sort/main_test.go)
 
