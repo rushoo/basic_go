@@ -262,6 +262,86 @@ func quickSort32(s []int, begin, end int) {
 }
 
 // 归并排序
+// 合并两个-有序-数列
+func merge(left, right []int) []int {
+	//额外开辟一块空间用于存放两数组元素
+	result := make([]int, len(left)+len(right))
+	i, j := 0, 0
+	r := 0
+	//将left的元素依次和right元素比较，将较小的数直接放入result，
+	for i < len(left) && j < len(right) {
+		if left[i] < right[j] {
+			result[r] = left[i]
+			i++
+		} else {
+			result[r] = right[j]
+			j++
+		}
+		r++
+	}
+	//可能存在一个数组元素已经完全复制，另一个数组还有若干元素未复制到result,则将剩余的全部复制过去
+	for i < len(left) {
+		result[r] = left[i]
+		i++
+		r++
+	}
+	for j < len(right) {
+		result[r] = right[j]
+		j++
+		r++
+	}
+	return result
+}
+func mergeSort1(s []int) []int {
+	//先拆分成两个数列
+	if len(s) > 1 {
+		middle := len(s) / 2
+		left := s[:middle]
+		right := s[middle:]
+		//通过递归调用，先逐层拆分，再逐层归并
+		s = merge(mergeSort(right), mergeSort(left))
+	}
+	return s
+}
+
+func mergeSort(s []int) []int {
+	//先拆分成两个数列
+	if len(s) > 100 {
+		middle := len(s) / 2
+		left := s[:middle]
+		right := s[middle:]
+		//通过递归调用，先逐层拆分，再逐层归并
+		s = merge(mergeSort(right), mergeSort(left))
+	} else {
+		insertSort(s)
+	}
+	return s
+}
+func concurrentMergeSort(data []int) []int {
+	//较小数列直接归并了
+	if len(data) <= 10000 {
+		return mergeSort(data)
+	} else {
+		// Concurrent，left-slice、right-slice
+		mid := len(data) / 2
+		ls := data[:mid]
+		rs := data[mid:]
+
+		var wg sync.WaitGroup
+		wg.Add(2)
+		var data1, data2 []int
+		go func() {
+			defer wg.Done()
+			data1 = concurrentMergeSort(ls)
+		}()
+		go func() {
+			defer wg.Done()
+			data2 = concurrentMergeSort(rs)
+		}()
+		wg.Wait()
+		return merge(data1, data2)
+	}
+}
 
 // 桶排序
 

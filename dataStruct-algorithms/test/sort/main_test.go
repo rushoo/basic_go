@@ -104,6 +104,7 @@ func BenchmarkCountingSort(b *testing.B) {
 const SIZE = 50_000
 const QuickSIZE = 1_000_000
 
+// 快速排序
 func Test_partition(t *testing.T) {
 	var s = gens(SIZE)
 	p := partition(s, 0, len(s)-1)
@@ -204,5 +205,82 @@ func Benchmark_32_QuickSort(b *testing.B) {
 	var s = gens(QuickSIZE)
 	b.StartTimer()
 	quickSort32(s, 0, len(s)-1)
+	b.StopTimer()
+}
+
+// 归并排序
+func Test_merge(t *testing.T) {
+	//生成一个有序数组
+	s := make([]int, 10000)
+	step := 20
+	for i := 1; i < 10000; i++ {
+		s[i] = s[i-1] + rand.Intn(step)
+	}
+	for i := 0; i < 100; i++ {
+		rand.Seed(time.Now().UnixNano())
+		l := rand.Intn(10000)
+		//种子更新需要一个极短的时间
+		time.Sleep(time.Microsecond)
+		rand.Seed(time.Now().UnixNano())
+		r := rand.Intn(10000)
+		fmt.Println("l:", l, "r:", r)
+		rs := merge(s[:l], s[r:])
+		if !isSorted(rs) {
+			t.Errorf("Merge wrong !")
+		}
+	}
+}
+func Test_mergeSort1(t *testing.T) {
+	//随机生成数列做归并排序，判断排序结果
+	for i := 0; i < 100; i++ {
+		rand.Seed(time.Now().UnixNano())
+		n := rand.Intn(100_000)
+		//fmt.Println(n)
+		s := gens(n)
+		s2 := mergeSort1(s)
+		if !isSorted(s2) {
+			t.Errorf("Not sorted!")
+		}
+	}
+}
+func Test_mergeSort(t *testing.T) {
+	//随机生成数列做归并排序，判断排序结果
+	for i := 0; i < 100; i++ {
+		rand.Seed(time.Now().UnixNano())
+		n := rand.Intn(100_000)
+		//fmt.Println(n)
+		s := gens(n)
+		s2 := mergeSort(s)
+		if !isSorted(s2) {
+			t.Errorf("Not sorted!")
+		}
+	}
+}
+func Test_concurrentMergeSort(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		rand.Seed(time.Now().UnixNano())
+		n := rand.Intn(1_000_000)
+		//fmt.Println(n)
+		s := gens(n)
+		s2 := concurrentMergeSort(s)
+		if !isSorted(s2) {
+			t.Errorf("Not sorted!")
+		}
+	}
+}
+func BenchmarkMergeSort(b *testing.B) {
+	//数据准备前停止计时器
+	b.StopTimer()
+	var s = gens(QuickSIZE)
+	b.StartTimer()
+	mergeSort(s)
+	b.StopTimer()
+}
+func BenchmarkConcurrentMergeSort(b *testing.B) {
+	//数据准备前停止计时器
+	b.StopTimer()
+	var s = gens(QuickSIZE)
+	b.StartTimer()
+	concurrentMergeSort(s)
 	b.StopTimer()
 }
