@@ -85,11 +85,12 @@ func insertSort[T dataType](data []T) {
 func partition[T dataType](data []T, low, high int) int {
 	var pivot, i, j = data[low], low, high
 	for i < j {
-		for data[i] <= pivot && i < high {
-			i++
-		}
+		//先移动右指针，所以最后两者则会合于较小的数
 		for data[j] > pivot && j > low {
 			j--
+		}
+		for data[i] <= pivot && i < high {
+			i++
 		}
 		if i < j {
 			data[i], data[j] = data[j], data[i]

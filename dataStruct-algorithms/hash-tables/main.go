@@ -7,34 +7,27 @@ bmap-reference:https://github.com/golang/go/blob/0bb6115dd6246c047335a75ce4b01a0
 map的结构体为hmap
 // A header for a Go map.
 type hmap struct {
-	// Note: the format of the hmap is also encoded in cmd/compile/internal/reflectdata/reflect.go.
-	// Make sure this stays in sync with the compiler's definition.
-	count     int // # live cells == size of map.  Must be first (used by len() builtin)
-	flags     uint8
-	B         uint8  // log_2 of # of buckets (can hold up to loadFactor * 2^B items)
-	noverflow uint16 // approximate number of overflow buckets; see incrnoverflow for details
-	hash0     uint32 // hash seed
+	count     int 	 // 代表哈希表中的元素个数，调用len(map)时，返回的就是该字段值。
+	flags     uint8	 // 状态标志，下文常量中会解释四种状态位含义。
+	B         uint8  // buckets（桶）的对数log_2
+	noverflow uint16 // 溢出桶的大概数量。
+	hash0     uint32 // 哈希种子
 
-	buckets    unsafe.Pointer // array of 2^B Buckets. may be nil if count==0.
-	oldbuckets unsafe.Pointer // previous bucket array of half the size, non-nil only when growing
-	nevacuate  uintptr        // progress counter for evacuation (buckets less than this have been evacuated)
+	buckets    unsafe.Pointer // 指向buckets数组的指针，数组大小为2^B，如果元素个数为0，它为nil。
+	oldbuckets unsafe.Pointer // oldbuckets是指向老的buckets数组的指针。非扩容状态下，它为nil。
+	nevacuate  uintptr        // 表示扩容进度，小于此地址的buckets代表已搬迁完成。
 
-	extra *mapextra // optional fields
+	extra *mapextra // 这个字段是为了优化GC扫描而设计的。当key和value均不包含指针，并且都可以inline时使用。extra是指向mapextra类型的指针。
 }
 mapextra的结构体
 // mapextra holds fields that are not present on all maps.
 type mapextra struct {
-    // 如果 key 和 value 都不包含指针，并且可以被 inline(<=128 字节)
-    // 就使用 hmap的extra字段 来存储 overflow buckets，这样可以避免 GC 扫描整个 map
-    // 然而 bmap.overflow 也是个指针。这时候我们只能把这些 overflow 的指针
-    // 都放在 hmap.extra.overflow 和 hmap.extra.oldoverflow 中了
-    // overflow 包含的是 hmap.buckets 的 overflow 的 buckets
-    // oldoverflow 包含扩容时的 hmap.oldbuckets 的 overflow 的 bucket
+    // 如果 key 和 value 都不包含指针，并且可以被 inline(<=128 字节)，就使用 hmap的extra字段 来存储 overflow buckets，这样可以避免 GC 扫描整个 map
+    // 然而 bmap.overflow 也是个指针。这时候我们只能把这些 overflow 的指针都放在 hmap.extra.overflow 和 hmap.extra.oldoverflow 中了.
+    // overflow 包含的是 hmap.buckets 的 overflow 的 buckets， oldoverflow 包含扩容时的 hmap.oldbuckets 的 overflow 的 bucket
     overflow    *[]*bmap
     oldoverflow *[]*bmap
-
-    // 指向空闲的 overflow bucket 的指针
-    nextOverflow *bmap
+    nextOverflow *bmap 	// 指向空闲的 overflow bucket 的指针
 }
 bmap结构体
 // A bucket for a Go map.
@@ -55,6 +48,47 @@ type bmap struct {
     values   [8]value-type
     overflow uint-ptr
 }
+重要的常量标志
+const (
+	// 一个桶中最多能装载的键值对（key-value）的个数为8
+	bucketCntBits = 3
+	bucketCnt     = 1 << bucketCntBits
+
+	// 触发扩容的装载因子为13/2=6.5
+	loadFactorNum = 13
+	loadFactorDen = 2
+
+	// 键和值超过128个字节，就会被转换为指针
+	maxKeySize  = 128
+	maxElemSize = 128
+
+	// 数据偏移量应该是bmap结构体的大小，它需要正确地对齐。
+  	// 对于amd64p32而言，这意味着：即使指针是32位的，也是64位对齐。
+	dataOffset = unsafe.Offsetof(struct {
+		b bmap
+		v int64
+	}{}.v)
+
+ 	// 每个桶（如果有溢出，则包含它的overflow的链接桶）在搬迁完成状态（evacuated* states）下，要么会包含它所有的键值对，要么一个都不包含.
+	//（但不包括调用evacuate()方法阶段，该方法调用只会在对map发起write时发生，在该阶段其他goroutine是无法查看该map的）。简单的说，桶里的数据要么一起搬走，要么一个都还未搬。
+  	// tophash除了放置正常的高8位hash值，还会存储一些特殊状态值（标志该cell的搬迁状态）。正常的tophash值，最小应该是5，以下列出的就是一些特殊状态值。
+ 	emptyRest      = 0 // 表示cell为空，并且比它高索引位的cell或者overflows中的cell都是空的。（初始化bucket时，就是该状态）
+	emptyOne       = 1 // 空的cell，cell已经被搬迁到新的bucket
+	evacuatedX     = 2 // 键值对已经搬迁完毕，key在新buckets数组的前半部分
+	evacuatedY     = 3 // 键值对已经搬迁完毕，key在新buckets数组的后半部分
+	evacuatedEmpty = 4 // cell为空，整个bucket已经搬迁完毕
+	minTopHash     = 5 // tophash的最小正常值
+
+	// flags
+	iterator     = 1 // 可能有迭代器在使用buckets
+	oldIterator  = 2 // 可能有迭代器在使用oldbuckets
+	hashWriting  = 4 // 有协程正在向map写人key
+	sameSizeGrow = 8 // 等量扩容
+
+	// 用于迭代器检查的bucket ID
+	noCheck = 1<<(8*goarch.PtrSize) - 1
+)
+
 在8个键值对数据后面有一个overflow指针，因为桶中最多只能装8个键值对，如果有多余的键值对落到了当前桶，那么就需要再构建一个桶（称为溢出桶），通过overflow指针链接起来。
 makeBucket为map创建用于保存buckets的数组。当桶的数量大于等于16个时，正常情况下就会额外创建2^(b-4)个溢出桶，所以正常桶和溢出桶在内存中的存储空间是连续的，只是被 hmap 中的不同字段引用而已。
 
@@ -129,10 +163,6 @@ unordered_map里的每一个数组（桶）里面存的其实是一个链表，k
 为了优化这个时间复杂度，map的底层就把这个链表转换成了红黑树，这样虽然插入增加了复杂度，但提高了频繁哈希碰撞时的查询效率，使查询效率变成O(log n)。
 */
 
-/*
-----------sync.Map揭秘-------------
-为了保证访问效率，当map将要添加、修改或删除key时，都会检查是否需要扩容，扩容实际上是以空间换时间的手段。
-*/
 import "fmt"
 
 //func main() {
@@ -205,9 +235,7 @@ import "fmt"
 //}
 
 func main() {
-	map1 := make(map[string]string, 0)
-	map1["xxxxxxxx"] = "oooooooo"
-	map2 := make(map[int]int, 9)
-	map2[11111111] = 8888888888
-	fmt.Println(map1, map2)
+	nums := []int{-1, 0, 1, 2, -1, -4}
+	res := threeSum(nums)
+	fmt.Println(res)
 }
