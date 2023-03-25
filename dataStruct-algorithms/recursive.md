@@ -118,7 +118,7 @@ func Hanoi(n int, A, B, C string) int {
 ```
 这会输出同样的过程步骤和总移动次数。明确问题定义和缩减问题规模的过程，在递归中是至关重要的。       
 
-###### #插入排序的递归形式，对前n个元素做插入排序
+###### #插入排序的递归形式
 其实就是对前n-1个元素调用插入排序，再将第n个元素按顺序插入排序
 ```
 func InsertSort(items []int, n int) {
@@ -148,5 +148,25 @@ func cell(n int) int {
     }
     // 当前数量 = 上一小时细胞总数的裂变 - 凋亡细胞数量
     return 2*cell(n-1) - cell(n-3)
+}
+```
+上面这些形式的递归有近乎相同的特征："由远及近"。 在处理二叉树时的递归可以认为是"由近及远"，按照既定的规则一直往后处理。    
+```
+//对二叉树节点的中序遍历，左中右。（前序和后序也类似）
+func printInOrder(tNode *TreeNode) {
+    if tNode == nil {
+    	return
+    }
+    printInOrder(tNode.left)
+    fmt.Printf(" %d ", tNode.value)
+    printInOrder(tNode.right)
+}
+//递归创建完全二叉树
+func genTreeNode(k int, s []int) *TreeNode {
+    //越界判断
+    if k >= len(s) {
+        return nil
+    }
+    return &TreeNode{s[k], genTreeNode(2*k+1, s), genTreeNode(2*k+2, s)}
 }
 ```
