@@ -9,7 +9,7 @@ func f(x int) (num int) { return }
 根据这个条件可以完善方法：   
 ```
 func f(x int) int {
-	return f(x-1) + f(x-2) + f(x-3)
+    return f(x-1) + f(x-2) + f(x-3)
 }
 ```
 很显然，根据这个条件，可以将问题不断简化。比如青蛙到达第10层时，一定是从 9|8|7 上来的，那么，f(10)=f(9)+f(8)+f(7),       
@@ -19,13 +19,13 @@ f(1)=f(0)+f(-1)+f(-2)
 而f(1)表示跳达第一层可能的方法，显然只可能 0->1 从地面跳达这一种情况，故f(1)=f(0)=1.现在我们计算方法变成：        
 ```
 func f(x int) int {
-	if x < 0 {
-		return 0
-	}
-	if x == 0 || x == 1 {
-		return 1
-	}
-	return f(x-1) + f(x-2) + f(x-3)
+    if x < 0 {
+    	return 0
+    }
+    if x == 0 || x == 1 {
+    	return 1
+    }
+    return f(x-1) + f(x-2) + f(x-3)
 } 
 ```
 根据这个计算方法，跳达第10层时有274种方法。         
@@ -43,13 +43,13 @@ func f(x int) int {
 ```
 // 求n！
 func f2(x int) int {
-	if x < 1 {
-		return 1
-	}
-	if x == 1 {
-		return 1
-	}
-	return x * f2(x-1)
+    if x < 1 {
+    	return 1
+    }
+    if x == 1 {
+    	return 1
+    }
+    return x * f2(x-1)
 }
 ```
 
@@ -64,10 +64,10 @@ func f2(x int) int {
 3、初始时为f(0),第一个月为f(1),根据意义，显然f(1)=f(0)=1,所以：    
 ```
 func f3(x int) int {
-	if x <= 1 {
-		return 1
-	}
-	return f3(x-1) + f3(x-2)
+    if x <= 1 {
+    	return 1
+    }
+    return f3(x-1) + f3(x-2)
 }
 ```
 
@@ -81,24 +81,24 @@ func f3(x int) int {
 最后再想办法将此n-1块全移到C，即f(n-1,B,A,C)，也就是：    
 ```
 func f(n int, A, B, C string) {
-	f(n-1, A, C, B)                 //先做
-	fmt.Println("外层函数目的解释")    //”以B为辅助，将n块从A移到C“
-	f(n-1, B, A, C)                //最后
+    f(n-1, A, C, B)                 //先做
+    fmt.Println("外层函数目的解释")    //”以B为辅助，将n块从A移到C“
+    f(n-1, B, A, C)                //最后
 }
 ```
 再来研究问题的边界： 假设只有一块，那么应该“将第一块从src直接移到des”   
 ```
 var counter int
 func f(n int, A, B, C string) {
-	if n == 1 {
-		counter++
-		fmt.Printf("%d: 将第%d块从%s直接移到%s\n", counter, n, A, C)
-		return
-	}
-	f(n-1, A, C, B)
-	counter++
-	fmt.Printf("%d: 以%s为辅助，将第%d块从%s移到%s\n", counter, B, n, A, C)
-	f(n-1, B, A, C)
+    if n == 1 {
+    	counter++
+    	fmt.Printf("%d: 将第%d块从%s直接移到%s\n", counter, n, A, C)
+    	return
+    }
+    f(n-1, A, C, B)
+    counter++
+    fmt.Printf("%d: 以%s为辅助，将第%d块从%s移到%s\n", counter, B, n, A, C)
+    f(n-1, B, A, C)
 }
 ```
 上述可以得到"合理"的结果，但其实偏离了问题的本质。问题是，”问：如何移？最少要移动多少次？“      
@@ -106,14 +106,14 @@ func f(n int, A, B, C string) {
 f(n,A,B,C)=f(n-1, A, C, B) + 1 + f(n-1, B, A, C)，即：   
 ```
 func Hanoi(n int, A, B, C string) int {
-	if n == 1 {
-		fmt.Printf("%d: 将第%d块从%s直接移到%s\n", counter, n, A, C)
-		return 1
-	}
-	a := Hanoi(n-1, A, C, B)
-	fmt.Printf("%d: 以%s为辅助，将第%d块从%s移到%s\n", counter, B, n, A, C)
-	b := Hanoi(n-1, B, A, C)
-	return a + 1 + b
+    if n == 1 {
+    	fmt.Printf("%d: 将第%d块从%s直接移到%s\n", counter, n, A, C)
+    	return 1
+    }
+    a := Hanoi(n-1, A, C, B)
+    fmt.Printf("%d: 以%s为辅助，将第%d块从%s移到%s\n", counter, B, n, A, C)
+    b := Hanoi(n-1, B, A, C)
+    return a + 1 + b
 }
 ```
 这会输出同样的过程步骤和总移动次数。明确问题定义和缩减问题规模的过程，在递归中是至关重要的。       
@@ -122,16 +122,31 @@ func Hanoi(n int, A, B, C string) int {
 其实就是对前n-1个元素调用插入排序，再将第n个元素按顺序插入排序
 ```
 func InsertSort(items []int, n int) {
-	l := len(items)
-	if l < n || n < 2 {
-		return
-	}
-	InsertSort(items, n-1) //前n-1个元素排序
-	tmp := items[n-1]
-	for n > 1 && tmp < items[n-2] {
-		items[n-1] = items[n-2]
-		n--
-	}
-	items[n-1] = tmp
+    l := len(items)
+    if l < n || n < 2 {
+    	return
+    }
+    InsertSort(items, n-1) //前n-1个元素排序
+    tmp := items[n-1]
+    for n > 1 && tmp < items[n-2] {
+    	items[n-1] = items[n-2]
+    	n--
+    }
+    items[n-1] = tmp
+}
+```
+
+##### #细胞分裂
+有一个细胞 每一个小时分裂一次，一次分裂一个子细胞，第三个小时后会死亡。那么n个小时候有多少细胞？
+```
+func cell(n int) int {
+    if n < 0 {
+    	return 0
+    }
+    if n == 1 {
+    	return 1
+    }
+    // 当前数量 = 上一小时细胞总数的裂变 - 凋亡细胞数量
+    return 2*cell(n-1) - cell(n-3)
 }
 ```

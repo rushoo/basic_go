@@ -7,21 +7,21 @@
 ```
 // 冒泡排序
 func bubbleSort(s []int) {
-	if len(s) < 2 {
-		return
-	}
-	m := len(s)
-	for m > 1 {
-	    //从第一个元素开始遍历，直到最后一个元素
-		for i := 0; i < m-1; i++ {
+    if len(s) < 2 {
+    	return
+    }
+    m := len(s)
+    for m > 1 {
+        //从第一个元素开始遍历，直到最后一个元素
+    	for i := 0; i < m-1; i++ {
         	//每次依次将第一个元素与后一个相比较，逆序交换
-			if s[i] > s[i+1] {
-				s[i], s[i+1] = s[i+1], s[i]
-			}
-		}
-		//更新”相对最后“位置索引
-		m--
-	}
+    		if s[i] > s[i+1] {
+    			s[i], s[i+1] = s[i+1], s[i]
+    		}
+    	}
+    	//更新”相对最后“位置索引
+    	m--
+    }
 }
 ```
 
@@ -31,22 +31,22 @@ func bubbleSort(s []int) {
 ```
 //选择排序
 func selectSort(s []int) {
-	if len(s) < 2 {
-		return
-	}
-	for end := len(s) - 1; end > 0 ;end--{
-		j := 0
-		tmp := s[0]
-		for i := 1; i < end+1; i++ {
-			//使用tmp记住较大的数，而非直接交换,并记下该较大数的位置
-			if s[i] > tmp {
-				tmp = s[i]
-				j = i
-			}
-		}
-		//将该较大数与end交换,这样一趟排序仅一次交换，也实现了“冒泡”的效果
-		s[j], s[end] = s[end], s[j]
-	}
+    if len(s) < 2 {
+    	return
+    }
+    for end := len(s) - 1; end > 0 ;end--{
+    	j := 0
+    	tmp := s[0]
+    	for i := 1; i < end+1; i++ {
+    		//使用tmp记住较大的数，而非直接交换,并记下该较大数的位置
+    		if s[i] > tmp {
+    			tmp = s[i]
+    			j = i
+    		}
+    	}
+    	//将该较大数与end交换,这样一趟排序仅一次交换，也实现了“冒泡”的效果
+    	s[j], s[end] = s[end], s[j]
+    }
 }
 ```
 
@@ -56,24 +56,24 @@ func selectSort(s []int) {
 ```
 //插入排序
 func insertSort(s []int) {
-	//设想一下从左起第二张牌开始
-	for i := 1; i < len(s); i++ {
-		//暂记当前待抽出的牌，如果是当前最大的也就跳过了本趟
-		tmp := s[i]
-		//如果它左边的牌的牌比它大，那就应该放在左边牌的左边
-		j := i - 1
-		for s[j] > tmp {
-		    //将左边较大的牌向右挪一下，方便这张牌的插入
-			s[j+1] = s[j]
-			//然后继续比较更左边一位的牌
-			j--
-			if j < 0 {
-				break
-			}
-		}
-		//此时j=-1，或者s[j]<tmp，应该插入s[j+1]的位置
-		s[j+1] = tmp
-	}
+    //设想一下从左起第二张牌开始
+    for i := 1; i < len(s); i++ {
+    	//暂记当前待抽出的牌，如果是当前最大的也就跳过了本趟
+    	tmp := s[i]
+    	//如果它左边的牌的牌比它大，那就应该放在左边牌的左边
+    	j := i - 1
+    	for s[j] > tmp {
+    	    //将左边较大的牌向右挪一下，方便这张牌的插入
+    		s[j+1] = s[j]
+    		//然后继续比较更左边一位的牌
+    		j--
+    		if j < 0 {
+    			break
+    		}
+    	}
+    	//此时j=-1，或者s[j]<tmp，应该插入s[j+1]的位置
+    	s[j+1] = tmp
+    }
 }
 ```
 基于50_000个随机数数列，比较上述这几种简单排序的性能，结果如下：
@@ -96,25 +96,25 @@ ok      tmp     81.096s
 计数排序是一种空间换时间的排序，对于高度聚合的数据，可以构造一个数组，每项的索引和值与原来数列中元素和重复出现次数对应。
 ```
 func countingSort(s []int, maxValue int) {
-	frequency := make([]int, maxValue+1)
-	//-1值填充，以便统计0值
-	for i, _ := range frequency {
-		frequency[i] = -1
-	}
-	for _, v := range s {
-		//统计待排序数组的元素频率
-		frequency[v]++
-	}
-	//	依据频率数组将元素回填
-	j := 0 //元素回填时的索引
-	for i := 0; i < maxValue; i++ {
-		counter := frequency[i]
-		for counter > -1 {
-			s[j] = i
-			counter--
-			j++
-		}
-	}
+    frequency := make([]int, maxValue+1)
+    //-1值填充，以便统计0值
+    for i, _ := range frequency {
+    	frequency[i] = -1
+    }
+    for _, v := range s {
+    	//统计待排序数组的元素频率
+    	frequency[v]++
+    }
+    //	依据频率数组将元素回填
+    j := 0 //元素回填时的索引
+    for i := 0; i < maxValue; i++ {
+    	counter := frequency[i]
+    	for counter > -1 {
+    		s[j] = i
+    		counter--
+    		j++
+    	}
+    }
 }
 ```
 比如样本范围0~100、样本容量为10_000_000的这种高聚合数列，计数排序几乎是瞬间完成的，结果如下：
@@ -138,21 +138,21 @@ ok      tmp     5.363s
 希尔排序是插入排序的改进，插入排序在数据有序时效率是很高的。希尔排序通过将数组分组排序，逐渐增加数据的顺序程度，优化插入排序的效率。
 ```
 func shellSort(s []int) {
-	n := len(s)
-	//划定组员间隔为step，折半缩减至1
-	for step := n / 2; step > 0; step = step / 2 {
-		//从左往右，对任一元素，将其在所属组内做插入排序
-		for i := 0; i < n; i++ {
-			//记录当前处理到的元素索引和值
-			j, tmp := i, s[i]
-			//并对其所在组做插入排序，j >= step避免向左越界
-			for j >= step && tmp < s[j-step] {
-				s[j] = s[j-step]
-				j = j - step
-			}
-			s[j] = tmp
-		}
-	}
+    n := len(s)
+    //划定组员间隔为step，折半缩减至1
+    for step := n / 2; step > 0; step = step / 2 {
+    	//从左往右，对任一元素，将其在所属组内做插入排序
+    	for i := 0; i < n; i++ {
+    		//记录当前处理到的元素索引和值
+    		j, tmp := i, s[i]
+    		//并对其所在组做插入排序，j >= step避免向左越界
+    		for j >= step && tmp < s[j-step] {
+    			s[j] = s[j-step]
+    			j = j - step
+    		}
+    		s[j] = tmp
+    	}
+    }
 }
 ```
 比如样本范围0~10000、样本容量为100_000，希尔排序对比普通插入排序，优化是非常明显的，对比结果如下：
